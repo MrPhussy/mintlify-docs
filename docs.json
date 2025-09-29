@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "REducation",
+  "name": "Reducation",
   "colors": {
     "primary": "#D32F2F",
     "light": "#EF5350",
@@ -11,7 +11,7 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "REducation",
+        "tab": "Reducation",
         "groups": [
           {
             "group": "Overview",
@@ -74,8 +74,8 @@
     }
   },
   "logo": {
-    "light": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' role='img' aria-label='REducation logo (light)'><rect x='0' y='0' width='512' height='512' rx='64' fill='%23D32F2F'/><text x='50%' y='57%' text-anchor='middle' font-family='Arial, sans-serif' font-size='256' font-weight='900' fill='%23FFFFFF' letter-spacing='4'>RED</text></svg>",
-    "dark": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' role='img' aria-label='REducation logo (dark)'><rect x='0' y='0' width='512' height='512' rx='64' fill='%23B71C1C'/><text x='50%' y='57%' text-anchor='middle' font-family='Arial, sans-serif' font-size='256' font-weight='900' fill='%23FFFFFF' letter-spacing='4'>RED</text></svg>"
+    "light": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' role='img' aria-label='Reducation logo (light)'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='%23EF5350'/><stop offset='100%' stop-color='%23B71C1C'/></linearGradient></defs><rect x='0' y='0' width='512' height='512' rx='64' fill='url(%23g)'/><text x='50%' y='57%' text-anchor='middle' font-family='Arial, sans-serif' font-size='256' font-weight='900' fill='%23000000' letter-spacing='4'>RED</text></svg>",
+    "dark": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' role='img' aria-label='Reducation logo (dark)'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='%23EF5350'/><stop offset='100%' stop-color='%23B71C1C'/></linearGradient></defs><rect x='0' y='0' width='512' height='512' rx='64' fill='url(%23g)'/><text x='50%' y='57%' text-anchor='middle' font-family='Arial, sans-serif' font-size='256' font-weight='900' fill='%23000000' letter-spacing='4'>RED</text></svg>"
   },
   "navbar": {
     "links": []
