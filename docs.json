@@ -66,6 +66,64 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Reducation",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "reducation/index"
+            ]
+          },
+          {
+            "group": "Getting Started",
+            "pages": [
+              "reducation/getting-started",
+              "reducation/user-guide"
+            ]
+          },
+          {
+            "group": "Platform",
+            "pages": [
+              "reducation/architecture",
+              "reducation/security-compliance"
+            ]
+          },
+          {
+            "group": "Features",
+            "pages": [
+              "reducation/features/lesson-planning",
+              "reducation/features/content-creation",
+              "reducation/features/research-assistant",
+              "reducation/features/class-management",
+              "reducation/features/reports-analytics",
+              "reducation/features/worksheet-sharing",
+              "reducation/features/content-sharing"
+            ]
+          },
+          {
+            "group": "Developer",
+            "pages": [
+              "reducation/developer"
+            ]
+          },
+          {
+            "group": "API",
+            "pages": [
+              "reducation/api/index",
+              "reducation/api/database-schema"
+            ]
+          },
+          {
+            "group": "Help",
+            "pages": [
+              "reducation/troubleshooting",
+              "reducation/faq",
+              "reducation/appendix"
+            ]
+          }
+        ]
       }
     ],
     "global": {
@@ -102,15 +160,15 @@
   },
   "contextual": {
     "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
   },
   "footer": {
     "socials": {

@@ -1,0 +1,382 @@
+---
+title: "Database Schema"
+description: "PostgreSQL tables, columns, indexes, and RLS policies used by the Reducation platform."
+---
+
+This page documents the Supabase (PostgreSQL) schema powering the Reducation platform, including table structures, indexes, and Row-Level Security (RLS) policies.
+
+All tables have RLS enabled by default. Unless explicitly stated, users can access only their own data.
+
+---
+
+## profiles
+
+User profile information.
+
+Columns:
+- `id` (UUID, Primary Key)
+- `user_id` (UUID, Foreign Key → auth.users)
+- `display_name` (TEXT)
+- `school_name` (TEXT)
+- `subject_specializations` (TEXT[])
+- `years_experience` (INTEGER)
+- `avatar_url` (TEXT)
+- `preferences` (JSONB)
+- `created_at` (TIMESTAMPTZ)
+- `updated_at` (TIMESTAMPTZ)
+
+RLS:
+- Users can only access their own profile rows.
+
+---
+
+## lessons
+
+Lesson plan storage.
+
+Columns:
+- `id` (UUID, Primary Key)
+- `user_id` (UUID, Foreign Key → profiles)
+- `title` (TEXT, NOT NULL)
+- `subject` (TEXT)
+- `year_group` (TEXT)
+- `duration` (INTEGER)
+- `difficulty` (TEXT)
+- `objectives` (TEXT[])
+- `content` (TEXT)
+- `curriculum_alignment` (TEXT)
+- `assessment_criteria` (TEXT)
+- `homework` (TEXT)
+- `resources` (JSONB)
+- `status` (TEXT: 'draft' | 'published')
+- `last_accessed_at` (TIMESTAMPTZ)
+- `created_at` (TIMESTAMPTZ)
+- `updated_at` (TIMESTAMPTZ)
+
+Indexes:
+- `user_id`
+- `subject`
+- `year_group`
+- `status`
+
+RLS:
+```sql
+CREATE POLICY "Users can view own lessons"
+ON lessons FOR SELECT
+USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own lessons"
+ON lessons FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own lessons"
+ON lessons FOR UPDATE
+USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own lessons"
+ON lessons FOR DELETE
+USING (auth.uid() = user_id);
+```
+
+---
+
+## content_items
+
+Generated content (worksheets, podcasts, mind maps).
+
+Columns:
+- `id` (UUID, Primary Key)
+- `user_id` (UUID, Foreign Key → profiles)
+- `title` (TEXT, NOT NULL)
+- `content_type` (TEXT: 'worksheet' | 'podcast' | 'mindmap')
+- `content_data` (JSONB, NOT NULL)
+- `tags` (TEXT[])
+- `ai_generated` (BOOLEAN, DEFAULT true)
+- `lesson_id` (UUID, Foreign Key → lessons)
+- `created_at` (TIMESTAMPTZ)
+- `updated_at` (TIMESTAMPTZ)
+
+Indexes:
+- `user_id`
+- `content_type`
+- `lesson_id`
+
+RLS:
+- Users can only access their own content items.
+
+---
+
+## research
+
+Research data with sources.
+
+Columns:
+- `id` (UUID, Primary Key)
+- `user_id` (UUID, Foreign Key → profiles)
+- `title` (TEXT, NOT NULL)
+- `query` (TEXT, NOT NULL)
+- `content` (TEXT)
+- `sources` (JSONB)
+- `source_count` (INTEGER)
+- `quality_score` (NUMERIC)
+- `fact_checked` (BOOLEAN)
+- `notes` (TEXT)
+- `tags` (TEXT[])
+- `created_at` (TIMESTAMPTZ)
+- `updated_at` (TIMESTAMPTZ)
+
+Indexes:
+- `user_id`
+- `quality_score`
+
+RLS:
+- Users can only access their own research.
+
+---
+
+## mindmaps
+
+Mind map structures.
+
+Columns:
+- `id` (UUID, Primary Key)
+- `user_id` (UUID, Foreign Key → profiles)
+- `title` (TEXT, NOT NULL)
+- `mindmap_data` (JSONB, NOT NULL)
+- `layout_data` (JSONB)
+- `source_lesson_id` (UUID, Foreign Key → lessons)
+- `source_research_id` (UUID, Foreign Key → research)
+- `status` (TEXT)
+- `created_at` (TIMESTAMPTZ)
+- `updated_at` (TIMESTAMPTZ)
+
+Indexes:
+- `user_id`
+- `source_lesson_id`
+- `source_research_id`
+
+RLS:
+- Users can only access their own mind maps.
+
+---
+
+## classes
+
+Class information.
+
+Columns:
+- `id` (UUID, Primary Key)
+- `teacher_id` (UUID, Foreign Key → profiles)
+- `name` (TEXT, NOT NULL)
+- `subject` (TEXT)
+- `year_group` (TEXT)
+- `description` (TEXT)
+- `class_code` (TEXT, UNIQUE, NOT NULL)
+- `max_students` (INTEGER, DEFAULT 30)
+- `is_active` (BOOLEAN, DEFAULT true)
+- `created_at` (TIMESTAMPTZ)
+- `updated_at` (TIMESTAMPTZ)
+
+Indexes:
+- `teacher_id`
+- `class_code` (unique)
+
+RLS:
+- Teachers can only access their own classes.
+
+---
+
+## students
+
+Student records.
+
+Columns:
+- `id` (UUID, Primary Key)
+- `name` (TEXT, NOT NULL)
+- `email` (TEXT, NOT NULL)
+- `year_group` (TEXT)
+- `parent_email` (TEXT)
+- `notes` (TEXT)
+- `created_at` (TIMESTAMPTZ)
+- `updated_at` (TIMESTAMPTZ)
+
+Indexes:
+- `email`
+
+RLS:
+- Only accessible by teachers of classes the student is enrolled in.
+
+---
+
+## class_enrollments
+
+Class-student relationships.
+
+Columns:
+- `id` (UUID, Primary Key)
+- `class_id` (UUID, Foreign Key → classes)
+- `student_id` (UUID, Foreign Key → students)
+- `enrolled_at` (TIMESTAMPTZ)
+- `status` (TEXT: 'active' | 'inactive')
+
+Indexes:
+- `class_id`
+- `student_id`
+- Unique constraint on (`class_id`, `student_id`)
+
+RLS:
+- Only accessible by the class teacher.
+
+---
+
+## class_assignments
+
+Assignments linked to classes.
+
+Columns:
+- `id` (UUID, Primary Key)
+- `class_id` (UUID, Foreign Key → classes)
+- `content_id` (UUID, Foreign Key → content_items)
+- `assigned_date` (DATE)
+- `due_date` (DATE)
+- `instructions` (TEXT)
+- `is_active` (BOOLEAN)
+- `created_at` (TIMESTAMPTZ)
+- `updated_at` (TIMESTAMPTZ)
+
+Indexes:
+- `class_id`
+- `content_id`
+- `due_date`
+
+RLS:
+- Only accessible by the class teacher.
+
+---
+
+## worksheet_sharing
+
+Public worksheet shares.
+
+Columns:
+- `id` (UUID, Primary Key)
+- `worksheet_id` (UUID, Foreign Key → content_items)
+- `teacher_id` (UUID, Foreign Key → profiles)
+- `share_code` (TEXT, UNIQUE, NOT NULL)
+- `expires_at` (TIMESTAMPTZ)
+- `max_submissions` (INTEGER)
+- `is_active` (BOOLEAN, DEFAULT true)
+- `created_at` (TIMESTAMPTZ)
+- `updated_at` (TIMESTAMPTZ)
+
+Indexes:
+- `share_code` (unique)
+- `worksheet_id`
+- `teacher_id`
+
+RLS:
+- Teachers can manage their own shares.
+- Public read access for active shares:
+```sql
+CREATE POLICY "Public can view active worksheet shares"
+ON worksheet_sharing FOR SELECT
+USING (is_active = true AND (expires_at IS NULL OR expires_at > NOW()));
+```
+
+---
+
+## worksheet_submissions
+
+Student worksheet submissions.
+
+Columns:
+- `id` (UUID, Primary Key)
+- `worksheet_id` (UUID, Foreign Key → content_items)
+- `student_email` (TEXT, NOT NULL)
+- `student_name` (TEXT, NOT NULL)
+- `responses` (JSONB, NOT NULL)
+- `ai_scores` (JSONB)
+- `teacher_scores` (JSONB)
+- `ai_feedback` (JSONB)
+- `teacher_feedback` (TEXT)
+- `status` (TEXT: 'submitted' | 'reviewed' | 'graded')
+- `ai_detection_score` (NUMERIC)
+- `ai_detection_details` (JSONB)
+- `flagged_for_review` (BOOLEAN)
+- `gptzero_grading_results` (JSONB)
+- `submitted_at` (TIMESTAMPTZ)
+- `reviewed_at` (TIMESTAMPTZ)
+
+Indexes:
+- `worksheet_id`
+- `student_email`
+- `status`
+- `flagged_for_review`
+
+RLS:
+- Teacher of the worksheet can access all submissions.
+- Public insert access for submissions:
+```sql
+CREATE POLICY "Public can insert submissions"
+ON worksheet_submissions FOR INSERT
+WITH CHECK (true);
+```
+
+---
+
+## content_sharing
+
+Public content shares.
+
+Columns:
+- `id` (UUID, Primary Key)
+- `content_id` (UUID, Foreign Key → content_items)
+- `user_id` (UUID, Foreign Key → profiles)
+- `share_code` (TEXT, UNIQUE, NOT NULL)
+- `is_active` (BOOLEAN, DEFAULT true)
+- `expires_at` (TIMESTAMPTZ)
+- `created_at` (TIMESTAMPTZ)
+- `updated_at` (TIMESTAMPTZ)
+
+Indexes:
+- `share_code` (unique)
+- `content_id`
+- `user_id`
+
+RLS:
+- Users can manage their own shares.
+- Public read access for active shares.
+
+---
+
+## RLS Reference
+
+Global patterns used across tables:
+```sql
+-- Owner-only SELECT
+USING (auth.uid() = user_id OR auth.uid() = teacher_id)
+
+-- Owner-only INSERT/UPDATE/DELETE
+WITH CHECK (auth.uid() = user_id)
+USING (auth.uid() = user_id)
+```
+
+Public access patterns:
+- Read-only access to active shares with optional expiry checks.
+- Insert access for public submissions where appropriate.
+
+---
+
+## Indexing Strategy
+
+- Foreign key columns: `user_id`, `teacher_id`, `class_id`, `student_id`, `content_id`, `worksheet_id`
+- Filtering columns: `status`, `due_date`, `flagged_for_review`, `content_type`, `quality_score`
+- Unique constraints: `class_code`, `share_code`, composite unique `(class_id, student_id)`
+
+---
+
+## Notes
+
+- All dates/times are stored as TIMESTAMPTZ in UTC.
+- Prefer ENUM-like text columns constrained at application layer for agility.
+- Consider partial indexes for frequently filtered boolean flags (e.g., `is_active = true`).

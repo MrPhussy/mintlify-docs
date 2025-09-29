@@ -1,0 +1,389 @@
+---
+title: "API Reference"
+description: "Edge Functions endpoints for AI generation, research, grading, and detection, including request/response formats and rate limits."
+---
+
+This API reference covers Reducation's server-side Edge Functions. All external AI calls are made from Edge Functions; client apps should never call external AI providers directly.
+
+Base URL:
+- Supabase Edge Functions: `/functions/v1`
+
+Authentication:
+- Functions are invoked server-side with Supabase project auth; public endpoints (e.g., worksheet submission) use RLS to control access.
+- Rate limits are enforced per endpoint.
+
+---
+
+## Endpoints
+
+### ai-lesson-generator
+Generates AI-powered lesson plans.
+
+- Endpoint: `POST /functions/v1/ai-lesson-generator`
+
+Request:
+```ts
+{
+  title: string;
+  subject: string;
+  yearGroup: string;
+  duration: number;        // minutes
+  difficulty: 'easy' | 'medium' | 'hard';
+  objectives: string[];
+}
+```
+
+Response:
+```ts
+{
+  success: boolean;
+  lesson: {
+    content: string;
+    assessment: string;
+    homework: string;
+  }
+}
+```
+
+- Model: Claude 3.7 Sonnet
+- Rate Limit: 10 requests/min/user
+
+---
+
+### ai-worksheet-generator
+Generates interactive worksheets with questions (and optional images).
+
+- Endpoint: `POST /functions/v1/ai-worksheet-generator`
+
+Request:
+```ts
+{
+  topic: string;
+  subject: string;
+  yearGroup: string;
+  questionCount: number;     // 5-30
+  difficulty: 'easy' | 'medium' | 'hard';
+  questionTypes: Array<'multiple_choice' | 'open_ended' | 'short_answer'>;
+  generateImages: boolean;
+}
+```
+
+Response:
+```ts
+{
+  success: boolean;
+  worksheet: {
+    title: string;
+    description: string;
+    instructions: string;
+    estimated_time: number;
+    questions: Array<{
+      id: string;
+      type: string;
+      question: string;
+      points: number;
+      options?: string[];
+      correct_answer?: string;
+      ai_grading_criteria: string;
+      sample_answers: string[];
+      hints?: string[];
+      image?: string;
+    }>;
+    grading: {
+      total_points: number;
+      passing_score: number;
+      auto_grade: boolean;
+      allow_teacher_override: boolean;
+    };
+  }
+}
+```
+
+- Models: Claude 3.7 Sonnet (text) + Fal.ai (images)
+- Rate Limit: 5 requests/min/user
+
+---
+
+### ai-podcast-generator
+Generates multi-voice educational podcasts.
+
+- Endpoint: `POST /functions/v1/ai-podcast-generator`
+
+Request:
+```ts
+{
+  title: string;
+  topic: string;
+  duration: number;          // seconds, 60-1800
+  hostCount: number;         // 1-3
+  tone: 'educational' | 'conversational' | 'formal';
+  lessonContent?: string;
+}
+```
+
+Response:
+```ts
+{
+  success: boolean;
+  contentData: {
+    type: 'podcast';
+    title: string;
+    topic: string;
+    duration: number;
+    hostCount: number;
+    tone: string;
+    script: string;
+    audioBase64: string;
+    voiceIds: string[];
+    projectId: string;
+    generatedAt: string;
+  }
+}
+```
+
+- Models: Gemini 2.5 Flash (script) + ElevenLabs (audio)
+- Rate Limit: 3 requests/min/user
+- Notes: Long-running (2–5 minutes typical)
+
+---
+
+### ai-mindmap-generator
+Generates structured mind map data.
+
+- Endpoint: `POST /functions/v1/ai-mindmap-generator`
+
+Request:
+```ts
+{
+  topic: string;
+  subject: string;
+  yearGroup: string;
+  lessonContent?: string;
+  researchContent?: string;
+}
+```
+
+Response:
+```ts
+{
+  success: boolean;
+  mindmap: {
+    central: {
+      id: string;
+      text: string;
+      color: string;
+    };
+    subtopics: Array<{
+      id: string;
+      text: string;
+      color: string;
+      details: Array<{
+        id: string;
+        text: string;
+      }>;
+    }>;
+  }
+}
+```
+
+- Model: Claude 3.7 Sonnet
+- Rate Limit: 10 requests/min/user
+
+---
+
+### ai-research
+Conducts fact-checked research with sources.
+
+- Endpoint: `POST /functions/v1/ai-research`
+
+Request:
+```ts
+{
+  query: string;
+  title: string;
+}
+```
+
+Response:
+```ts
+{
+  research: {
+    id: string;
+    title: string;
+    query: string;
+    content: string;
+    sources: Array<{
+      title: string;
+      url: string;
+      credibility_score: number;
+    }>;
+    source_count: number;
+    quality_score: number;    // 0-100
+    fact_checked: boolean;
+  }
+}
+```
+
+- Model: Claude 3.7 Sonnet
+- Rate Limit: 15 requests/min/user
+
+---
+
+### ai-research-chat
+Interactive AI chat about mind map topics.
+
+- Endpoint: `POST /functions/v1/ai-research-chat`
+- Response: Streaming text
+
+Request:
+```ts
+{
+  question: string;
+  topic: string;
+  context?: string;
+}
+```
+
+- Model: Claude 3.7 Sonnet
+- Max Tokens: 2000
+- Rate Limit: 20 requests/min/user
+
+---
+
+### ai-generate-notes
+Generates structured notes from research.
+
+- Endpoint: `POST /functions/v1/ai-generate-notes`
+
+Request:
+```ts
+{
+  researchContent: string;
+}
+```
+
+Response:
+```ts
+{
+  notes: string;    // Markdown formatted
+}
+```
+
+- Model: Claude 3.7 Sonnet
+- Rate Limit: 10 requests/min/user
+
+---
+
+### ai-image-generator
+Generates educational images for worksheet questions.
+
+- Endpoint: `POST /functions/v1/ai-image-generator`
+
+Request:
+```ts
+{
+  prompt: string;
+  subject: string;
+  yearGroup: string;
+  questionType: string;
+}
+```
+
+Response:
+```ts
+{
+  success: boolean;
+  image: string;    // base64 or URL
+}
+```
+
+- Model: Fal.ai
+- Rate Limit: 10 requests/min/user
+
+---
+
+### gptzero-detector
+Detects AI-generated content in text.
+
+- Endpoint: `POST /functions/v1/gptzero-detector`
+
+Request:
+```ts
+{
+  text: string;
+  document_type: string;
+}
+```
+
+Response:
+```ts
+{
+  ai_detection_score: number;    // 0-1
+  ai_detection_details: {
+    class_probabilities: Record<string, number>;
+    completely_generated_prob: number;
+    sentences: Array<{ sentence: string; score: number }>;
+  }
+}
+```
+
+- Service: GPTZero API
+- Rate Limit: 30 requests/min/user
+
+---
+
+### gptzero-grader
+AI-assisted grading of student work.
+
+- Endpoint: `POST /functions/v1/gptzero-grader`
+
+Request:
+```ts
+{
+  submission_text: string;
+  rubric: string;
+  grading_criteria: string;
+}
+```
+
+Response:
+```ts
+{
+  score: number;
+  feedback: string;
+  rubric_scores: Record<string, number>;
+}
+```
+
+- Service: GPTZero API
+- Rate Limit: 20 requests/min/user
+
+---
+
+## CORS
+
+Functions use permissive CORS by default for client access where applicable:
+
+```ts
+export const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+```
+
+---
+
+## Rate Limits (Per Endpoint)
+
+- Authentication: 5/min
+- Lesson Generation: 10/min
+- Worksheet Generation: 5/min
+- Podcast Generation: 3/min
+- Mind Map Generation: 10/min
+- Research: 15/min
+- Research Chat: 20/min
+- Image Generation: 10/min
+- GPTZero Detection: 30/min
+- GPTZero Grading: 20/min
+
+If you receive “Rate limit exceeded”, wait 1–5 minutes and retry. For higher limits, contact support.

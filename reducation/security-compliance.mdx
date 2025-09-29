@@ -1,0 +1,206 @@
+---
+title: "Security & Compliance"
+description: "Authentication, authorization (RLS), data protection, GDPR compliance, API security, and monitoring."
+---
+
+## Authentication
+
+Supabase Auth:
+- JWT token-based authentication
+- Secure session management with automatic refresh
+- Secure password hashing (bcrypt)
+- Email verification required
+
+Password requirements:
+- Minimum 6 characters
+- No maximum length
+- No complexity requirements (for UX)
+- Users can change their password
+
+Session management:
+- Tokens stored in `localStorage`
+- httpOnly cookies for defense-in-depth (planned)
+- Auto-logout on token expiration
+- Session timeout after 1 week of inactivity
+
+---
+
+## Authorization (RLS)
+
+All database tables enforce Row-Level Security (RLS). Users only access their own data unless explicitly allowed (e.g., public shares).
+
+Example RLS for `lessons`:
+```sql
+CREATE POLICY "Users can view own lessons"
+ON lessons FOR SELECT
+USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own lessons"
+ON lessons FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own lessons"
+ON lessons FOR UPDATE
+USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own lessons"
+ON lessons FOR DELETE
+USING (auth.uid() = user_id);
+```
+
+Public share access:
+```sql
+-- Active worksheet shares are publicly viewable
+CREATE POLICY "Public can view active worksheet shares"
+ON worksheet_sharing FOR SELECT
+USING (is_active = true AND (expires_at IS NULL OR expires_at > NOW()));
+
+-- Public can insert submissions (for shared worksheets)
+CREATE POLICY "Public can insert submissions"
+ON worksheet_submissions FOR INSERT
+WITH CHECK (true);
+```
+
+---
+
+## Data Protection
+
+Encryption:
+- Database encrypted at rest (Supabase defaults)
+- All API traffic over HTTPS/TLS
+- API keys stored in environment (Supabase secrets / server env)
+- Secrets never exposed to the client
+
+PII protection:
+- Student and parent emails stored as text (encrypt at rest via Supabase)
+- No passwords stored by app (handled by Supabase Auth)
+- Minimal data collection
+
+Data retention:
+- User data retained while account is active
+- Deleted accounts: data removed within 30 days
+- Submission data retained for academic records
+- Exports available before deletion
+
+---
+
+## GDPR Compliance
+
+User rights:
+
+Right to Access:
+- Users can view/export their data
+- Machine-readable formats (CSV/JSON)
+
+Right to Rectification:
+- Users can edit their profile data
+
+Right to Erasure:
+- Account deletion available
+- All user data removed within 30 days (irreversible after grace period)
+
+Right to Data Portability:
+- Export content as JSON
+- Export grades as CSV
+- Download resources
+
+Right to Object / Consent:
+- Clear terms and privacy policy
+- Opt-out of analytics (planned)
+- Cookie consent (planned)
+
+---
+
+## API Security
+
+Rate limiting (per endpoint):
+- Authentication: 5/min
+- Content generation: 5/min
+- Research: 15/min
+- General queries: 100/min
+- See API Reference for full limits
+
+Input validation:
+- Sanitize all inputs server-side
+- Prevent XSS
+- SQL injection protection via Supabase SDK
+- Validate file uploads and request shapes
+
+CORS policy:
+```ts
+export const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+```
+
+---
+
+## External API Security
+
+API key management:
+- Stored in Supabase secrets / server env
+- Never exposed to clients
+- Rotate regularly (every 90 days recommended)
+- Separate keys for dev and prod
+
+Edge Function best practices:
+- All external API calls from server-side functions
+- Client never calls AI providers directly
+- Errors do not leak sensitive information
+
+---
+
+## Content Security
+
+User-generated content:
+- Input sanitization
+- XSS prevention
+- Content filtering (profanity/inappropriate content)
+- Moderation tools (planned)
+
+AI-generated content:
+- Output sanitization
+- Age-appropriate validation
+- Human review recommended
+
+File uploads:
+- Max file size: 20MB
+- Allowed types: PDF, DOC, DOCX, common images
+- Virus scanning (planned)
+- Secure storage in Supabase Storage
+
+---
+
+## Student Safety
+
+COPPA considerations:
+- No student accounts under 13 without parental consent
+- Minimal data collection
+- No advertising to students
+- Clear parental notifications
+
+Safeguarding:
+- No direct user-to-user messaging
+- No public student profiles
+- Teacher-only content creation
+- Submission privacy by default
+
+---
+
+## Monitoring & Logging
+
+Activity logs:
+- Auth events
+- Content creation/updates
+- Data exports
+- Failed login attempts
+
+Error tracking:
+- Supabase logs and Edge Function logs
+- Client-side error boundaries
+
+Audit trail:
+- Database changes recorded
+- Admin actions recorded
+- Compliance reporting support
