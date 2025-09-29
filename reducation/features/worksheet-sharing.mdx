@@ -1,0 +1,164 @@
+---
+title: "Worksheet Sharing"
+description: "Publish worksheets for students to complete without accounts, manage submissions, and grade efficiently."
+---
+
+## Overview
+
+Share worksheets with students for completion without requiring platform accounts. Configure access, track submissions, auto-grade objective questions, and use AI-assisted grading for open-ended responses.
+
+---
+
+## Publishing a Worksheet
+
+### Step 1: Prepare Worksheet
+Ensure the worksheet is complete:
+- Questions finalized with answers and grading criteria
+- Clear student instructions
+- Images included (if any)
+
+### Step 2: Generate Share Link
+1. Open the worksheet in your content library
+2. Click “Share”
+3. Click “Publish”
+
+System generates:
+- Unique 8-character share code
+- Public URL: `/worksheet/:shareCode`
+
+### Step 3: Configure Settings
+- Expiration Date (optional)
+- Max Submissions (optional)
+- Active Toggle (enable/disable access)
+
+### Step 4: Distribute
+Share via:
+- Email, LMS, class messaging
+- QR code
+- Direct link
+
+---
+
+## Student Experience
+
+### Accessing a Worksheet
+- Open the shared URL
+- No login required
+- If inactive/expired/limit reached: clear error message is shown
+
+### Completing a Worksheet
+
+Student view features:
+- Instructions at top, question counter, progress indicator, time estimate
+- Question display: one-by-one or all-at-once
+
+Question interactions:
+- Multiple Choice: select one option; can clear selection
+- Short Answer: brief text field with limits
+- Open-Ended: large text area with word count
+
+Submission flow:
+1. Answer all required questions
+2. Enter Full Name and Email Address
+3. Click “Submit” to finalize
+4. Confirmation displayed; edits disabled post-submit
+
+Validation:
+- Required questions must be answered
+- Email format check
+- Duplicate submission prevention
+
+---
+
+## Managing Submissions
+
+### Submission List
+For each submission:
+- Student name and email
+- Submission timestamp
+- Status: submitted / reviewed / graded
+- Score (if graded)
+- AI detection score (GPTZero)
+- Action buttons
+
+Sorting & filtering:
+- Sort by time, name, score, review status
+- Filter ungraded, flagged for review, date range
+
+### Grading Submissions
+
+Auto-Grading:
+- Multiple choice: instantaneous
+- Short answer: keyword-based
+- Scores automatically calculated
+
+AI-Assisted Grading:
+- Open-ended responses analyzed
+- GPTZero Grader suggests scores + feedback
+- Teacher review and override recommended
+
+Manual Grading:
+1. Open “Grade” for a submission
+2. Review answers and assign points
+3. Override AI where needed
+4. Add feedback and save
+
+Feedback:
+- Overall comment
+- Per-question feedback
+- Notes on strengths and areas for improvement
+
+---
+
+## AI Detection (Academic Integrity)
+
+All submissions are run through GPTZero:
+
+Detection scores:
+- 0–0.3: Likely human-written
+- 0.3–0.7: Mixed (needs review)
+- 0.7–1.0: Likely AI-generated
+
+Details:
+- Sentence-level analysis
+- Per-sentence probabilities
+- Flagged sections report
+
+Actions for flagged submissions:
+- Manual review
+- Request resubmission if appropriate
+- Academic honesty discussion
+- Maintain documentation
+
+---
+
+## Exporting Submissions
+
+Formats:
+- CSV: names, emails, scores, timestamps
+- Excel: formatted gradebook
+- PDF: individual student reports
+- Bulk PDF: all submissions
+
+Includes:
+- Student info, responses
+- Scores and feedback
+- Timestamps
+- AI detection scores
+
+---
+
+## Share Management
+
+Active shares:
+- Worksheet title, share code, created/expiration dates
+- Submission count
+- Actions: submissions, copy link, edit settings, deactivate, delete
+
+Expired shares:
+- Automatically deactivated
+- Submissions retained
+- Can be reactivated (new code generated)
+
+Cleanup:
+- Background job deactivates expired shares to keep system tidy

@@ -1,0 +1,162 @@
+---
+title: "Class Management"
+description: "Manage classes, students, and assignments with streamlined workflows."
+---
+
+## Overview
+
+Manage your classes, students, and assignments in one centralized location. Create classes, enroll students, assign content, track submissions, and export grades.
+
+---
+
+## Class Overview Dashboard
+
+### Stats Dashboard
+- Total Students — across all classes
+- Active Classes — currently active
+- Total Assignments — created across classes
+- Assignments Due This Week — upcoming deadlines
+
+### Class Cards
+Each class card shows:
+- Class name, subject, year group
+- Student count / maximum capacity
+- Unique 6-digit class code
+- Assignment count
+- Description
+- Quick actions (View, Manage Students, Manage Assignments)
+
+---
+
+## Creating a Class
+
+### Step 1: New Class Dialog
+1. Click “New Class”
+2. Fill in details:
+
+Required:
+- Class Name (e.g., “Year 7 Mathematics - Set 1”)
+- Subject
+- Year Group
+
+Optional:
+- Description
+- Max Students (default 30)
+
+### Step 2: Automatic Setup
+System will:
+- Generate a unique 6-digit class code
+- Create an empty student roster
+- Initialize assignment structure
+- Set class to active
+
+### Step 3: Share Class Code
+- Distribute the code for student self-enrollment
+- Share via email/messaging or display in classroom
+
+---
+
+## Student Management
+
+### Adding Students Individually
+1. Manage Students → Add Student
+2. Enter:
+   - Full Name (required)
+   - Email Address (required)
+   - Year Group (optional)
+   - Parent Email (optional)
+   - Notes (optional)
+
+Best practices:
+- Use school email addresses
+- Verify spelling
+- Add parent contacts for primary students
+- Capture learning needs/accommodations in notes
+
+### Bulk Import Students
+1. Manage Students → Bulk Import
+2. Download CSV template
+3. Populate and upload
+4. Review preview → Confirm
+
+CSV format:
+```csv
+Name,Email,Year Group,Parent Email,Notes
+John Smith,john.smith@school.com,Year 7,parent@email.com,
+Jane Doe,jane.doe@school.com,Year 7,,Requires extension work
+```
+
+### Managing Student Information
+- View: sortable, searchable list; filter by year group
+- Edit: modify any field and save
+- Remove: remove from class (data retained for records)
+
+### Student Self-Enrollment
+- Students enter the 6-digit class code to join
+- System validates code and adds student
+- Teacher notification and optional approval (planned)
+
+Security:
+- Unique codes per class
+- Regeneration supported
+- Case-sensitive, no spaces
+
+---
+
+## Assignment Management
+
+### Creating an Assignment
+1. Manage Assignments → Create Assignment
+2. Configure:
+
+Required:
+- Content Item (from library; e.g., Worksheet)
+- Due Date
+- Instructions
+
+Optional:
+- Points
+- Active Status (immediate or scheduled)
+
+### Assignment List
+Displays:
+- Content title/type
+- Due date
+- Submission count
+- Active/Inactive
+- Quick actions
+
+Sort by:
+- Due date
+- Creation date
+- Submission count
+- Title
+
+### Assignment Actions
+- View Submissions — see all submissions with timestamps and status
+- Grade Submissions — manual or AI-assisted; override AI anytime
+- Export Grades — CSV including names, scores, feedback
+- Delete Assignment — confirmation required; submissions retained
+
+### Managing Due Dates
+- Edit due date and notify students (if enabled)
+- Grant individual extensions with notes
+
+---
+
+## Class Overview Details
+
+From “View Class”:
+- Class statistics (students, completion rate, average grades)
+- Student performance trends and engagement
+- Recent activity (submissions, assignments)
+- Upcoming deadlines
+- Quick navigation to student/assignment management and reports
+
+---
+
+## Class Settings
+
+- Edit Class — name, description, max students, settings
+- Archive Class — disables submissions; preserves data
+- Delete Class — permanent removal (use archive if unsure)

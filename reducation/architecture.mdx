@@ -1,0 +1,117 @@
+---
+title: "Platform Architecture"
+description: "System components, data flow, and security layers of the Reducation platform."
+---
+
+## System Components
+
+```text
+┌─────────────────────────────────────────────────┐
+│                  User Interface                  │
+│         (React + TypeScript + Tailwind)         │
+└────────────────┬────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────────┐
+│              Supabase Backend                    │
+│  ┌──────────┬──────────┬──────────┬──────────┐ │
+│  │PostgreSQL│   Auth   │ Storage  │   Edge   │ │
+│  │          │          │          │Functions │ │
+│  └──────────┴──────────┴──────────┴──────────┘ │
+└────────────────┬────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────────┐
+│              External AI Services                │
+│  ┌──────────┬──────────┬──────────┬──────────┐ │
+│  │OpenRouter│ElevenLabs│  Fal.ai  │ GPTZero  │ │
+│  │(Claude & │ (Audio)  │ (Images) │(Detection│ │
+│  │ Gemini)  │          │          │& Grading)│ │
+│  └──────────┴──────────┴──────────┴──────────┘ │
+└─────────────────────────────────────────────────┘
+```
+
+### Components Overview
+
+- Frontend
+  - React 18 + TypeScript + Tailwind CSS
+  - React Query for server state
+  - Page modules for Lessons, Content, Research, Mind Maps, Classes, Reports
+- Supabase Backend
+  - PostgreSQL database with Row-Level Security (RLS)
+  - Supabase Auth for JWT sessions
+  - Storage for files/resources
+  - Edge Functions (Deno) for AI calls and server logic
+- External AI Services
+  - OpenRouter (Claude & Gemini) — text generation and research
+  - ElevenLabs — podcast audio generation
+  - Fal.ai — image generation
+  - GPTZero — AI detection and AI-assisted grading
+
+## Data Flow
+
+1. User interacts with the React UI
+2. Frontend makes request to Supabase (Auth headers/JWT)
+3. Supabase Auth validates session and JWT
+4. PostgreSQL enforces RLS on all queries
+5. If AI functionality is needed, an Edge Function invokes external AI APIs
+6. Response flows back to the client via Supabase SDK
+7. React components re-render with the new data
+
+## Security Layers
+
+- Client-Side: Input validation and sanitization
+- Transport: HTTPS/TLS encryption end-to-end
+- Authentication: JWT tokens with refresh, secure session handling
+- Authorization: Row-Level Security (RLS) on all tables
+- Database: Encryption at rest, parameterized queries
+- API: Rate limiting per endpoint, secrets stored in server environment
+
+### RLS Example
+
+```sql
+-- Example RLS policy for lessons
+CREATE POLICY "Users can view own lessons"
+ON lessons FOR SELECT
+USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own lessons"
+ON lessons FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own lessons"
+ON lessons FOR UPDATE
+USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own lessons"
+ON lessons FOR DELETE
+USING (auth.uid() = user_id);
+```
+
+### CORS Example (Edge Functions)
+
+```typescript
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+```
+
+## Reliability and Performance
+
+- React Query caching and request de-duplication
+- Edge Functions for offloading long-running AI tasks (e.g., podcast generation)
+- Database indexes on high-traffic columns (user_id, status, due_date, etc.)
+- Planned: Background cleanup of expired shares and logs
+
+## Observability
+
+- Supabase logs and function logs
+- Client-side error boundaries
+- Activity logs for key actions (auth, creation, exports)
+
+## Deployment Considerations
+
+- Separate API keys for dev/prod via Supabase secrets
+- Regular key rotation (recommended every 90 days)
+- Database migrations tracked under `supabase/migrations`
